@@ -34,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
               radius: 52,
               backgroundColor: color,
               child: const Text(
-                'JD',
+                'VP',
                 style: TextStyle(
                   fontSize: 32,
                   color: Colors.white,
@@ -44,12 +44,12 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             const Text(
-              'John Doe',
+              'Vital Pal',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
-              'john@example.com',
+              'vital@example.com',
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(height: 32),

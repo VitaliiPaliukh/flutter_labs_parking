@@ -58,7 +58,7 @@ class HomeScreen extends StatelessWidget {
             onTap: () => Navigator.pushNamed(context, '/profile'),
             child: const CircleAvatar(
               backgroundColor: Color(0xFF0D47A1),
-              child: Text('JD', style: TextStyle(color: Colors.white)),
+              child: Text('VP', style: TextStyle(color: Colors.white)),
             ),
           ),
           const SizedBox(width: 16),
