@@ -53,9 +53,9 @@ class ProfileScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(height: 32),
-            ProfileSection(title: 'Account', items: _accountItems),
+            const ProfileSection(title: 'Account', items: _accountItems),
             const SizedBox(height: 16),
-            ProfileSection(title: 'Settings', items: _settingsItems),
+            const ProfileSection(title: 'Settings', items: _settingsItems),
             const SizedBox(height: 32),
             AppButton(
               label: 'Sign Out',
