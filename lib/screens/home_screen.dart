@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     const ParkingSpot(id: 'A3', isFree: true),
     const ParkingSpot(id: 'A4', isFree: false),
     const ParkingSpot(id: 'A5', isFree: true),
-    const ParkingSpot(id: 'A6', isFree: true),
+    const ParkingSpot(id: 'A6', isFree: false),
     const ParkingSpot(id: 'A7', isFree: false),
     const ParkingSpot(id: 'A8', isFree: true),
     const ParkingSpot(id: 'A9', isFree: false),
