@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../core/app_dependencies.dart';
-import '../domain/user_validator.dart';
-import '../models/user.dart';
-import '../widgets/app_button.dart';
-import '../widgets/delete_account_dialog.dart';
-import '../widgets/profile_edit_form.dart';
-import '../widgets/profile_info_card.dart';
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/domain/user_validator.dart';
+import 'package:parking/models/user.dart';
+import 'package:parking/widgets/app_button.dart';
+import 'package:parking/widgets/delete_account_dialog.dart';
+import 'package:parking/widgets/profile_edit_form.dart';
+import 'package:parking/widgets/profile_info_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

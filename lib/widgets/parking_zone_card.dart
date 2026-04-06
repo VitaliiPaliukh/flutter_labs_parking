@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/parking_spot.dart';
-import 'parking_spot_cell.dart';
+import 'package:parking/models/parking_spot.dart';
+import 'package:parking/widgets/parking_spot_cell.dart';
 
 class ParkingZoneCard extends StatelessWidget {
   const ParkingZoneCard({

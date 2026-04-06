@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 
-import 'core/app_dependencies.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/screens/home_screen.dart';
+import 'package:parking/screens/login_screen.dart';
+import 'package:parking/screens/profile_screen.dart';
+import 'package:parking/screens/register_screen.dart';
 
 void main() => runApp(const MyApp());
 

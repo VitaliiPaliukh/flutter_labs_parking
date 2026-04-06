@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../core/app_dependencies.dart';
-import '../domain/user_validator.dart';
-import '../widgets/app_button.dart';
-import '../widgets/app_logo.dart';
-import '../widgets/app_text_field.dart';
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/domain/user_validator.dart';
+import 'package:parking/widgets/app_button.dart';
+import 'package:parking/widgets/app_logo.dart';
+import 'package:parking/widgets/app_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,9 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   errorText: _passError,
                 ),
                 const SizedBox(height: 28),
-                _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Sign In', onPressed: _login),
+                if (_loading) const Center(child: CircularProgressIndicator())
+                else AppButton(label: 'Sign In', onPressed: _login),
                 const SizedBox(height: 12),
                 AppButton(
                   label: 'Create account',

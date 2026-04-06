@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:parking/core/app_dependencies.dart';
-import '../domain/user_validator.dart';
-import '../models/user.dart';
-import '../widgets/app_button.dart';
-import '../widgets/app_logo.dart';
-import '../widgets/app_text_field.dart';
+import 'package:parking/domain/user_validator.dart';
+import 'package:parking/models/user.dart';
+import 'package:parking/widgets/app_button.dart';
+import 'package:parking/widgets/app_logo.dart';
+import 'package:parking/widgets/app_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -119,9 +119,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   errorText: _confirmErr,
                 ),
                 const SizedBox(height: 28),
-                _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Sign Up', onPressed: _register),
+                if (_loading) const Center(child: CircularProgressIndicator())
+                else AppButton(label: 'Sign Up', onPressed: _register),
                 const SizedBox(height: 12),
                 AppButton(
                   label: 'Already have an account?',

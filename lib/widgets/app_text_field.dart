@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 class AppTextField extends StatelessWidget {
   const AppTextField({
     required this.label,
-    this.hint,
+    required this.controller, this.hint,
     this.icon,
     this.obscure = false,
-    required this.controller,
     this.errorText,
     super.key,
   });

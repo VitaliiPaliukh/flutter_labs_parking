@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:parking/data/user_repository.dart';
+import 'package:parking/models/user.dart';
 
-import '../models/user.dart';
-import 'user_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalUserRepository implements UserRepository {
   static const _usersKey = 'sp_users';

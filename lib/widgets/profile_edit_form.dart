@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'app_button.dart';
-import 'app_text_field.dart';
+import 'package:parking/widgets/app_button.dart';
+import 'package:parking/widgets/app_text_field.dart';
 
 class ProfileEditForm extends StatelessWidget {
   const ProfileEditForm({

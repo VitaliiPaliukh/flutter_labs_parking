@@ -1,5 +1,5 @@
-import '../data/local_user_repository.dart';
-import '../data/user_repository.dart';
+import 'package:parking/data/local_user_repository.dart';
+import 'package:parking/data/user_repository.dart';
 
 class AppDependencies {
   AppDependencies._();

@@ -1,4 +1,4 @@
-import '../models/user.dart';
+import 'package:parking/models/user.dart';
 
 abstract class UserRepository {
   Future<bool> register(User user);

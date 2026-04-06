@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../core/app_dependencies.dart';
-import '../models/parking_spot.dart';
-import '../models/user.dart';
-import '../widgets/parking_zone_card.dart';
-import '../widgets/stat_card.dart';
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/models/parking_spot.dart';
+import 'package:parking/models/user.dart';
+import 'package:parking/widgets/parking_zone_card.dart';
+import 'package:parking/widgets/stat_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

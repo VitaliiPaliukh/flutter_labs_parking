@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/user.dart';
+import 'package:parking/models/user.dart';
 
 class ProfileInfoCard extends StatelessWidget {
   const ProfileInfoCard({required this.user, super.key});
