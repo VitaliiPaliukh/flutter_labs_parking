@@ -1,72 +1,169 @@
 import 'package:flutter/material.dart';
 
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/domain/user_validator.dart';
+import 'package:parking/models/user.dart';
 import 'package:parking/widgets/app_button.dart';
-import 'package:parking/widgets/profile_section.dart';
+import 'package:parking/widgets/delete_account_dialog.dart';
+import 'package:parking/widgets/profile_edit_form.dart';
+import 'package:parking/widgets/profile_info_card.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  static const _accountItems = [
-    {'icon': Icons.person_outline, 'label': 'Edit Profile'},
-    {'icon': Icons.directions_car_outlined, 'label': 'My Vehicles'},
-    {'icon': Icons.notifications_outlined, 'label': 'Notifications'},
-  ];
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-  static const _settingsItems = [
-    {'icon': Icons.wifi_outlined, 'label': 'MQTT Settings'},
-    {'icon': Icons.local_parking_outlined, 'label': 'My Parking Lots'},
-    {'icon': Icons.help_outline, 'label': 'Help & Support'},
-  ];
+class _ProfileScreenState extends State<ProfileScreen> {
+  User? _user;
+  bool _editing = false;
+  bool _loading = true;
+  String? _nameErr;
+  String? _plateErr;
+
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _plateCtrl;
+
+  final _repo = AppDependencies().userRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController();
+    _plateCtrl = TextEditingController();
+    _loadUser();
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _plateCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUser() async {
+    final email = await _repo.getSession();
+    if (email == null || !mounted) return;
+    final user = await _repo.getUser(email);
+    if (!mounted) return;
+    setState(() {
+      _user = user;
+      _loading = false;
+      _nameCtrl.text = user?.name ?? '';
+      _plateCtrl.text = user?.vehiclePlate ?? '';
+    });
+  }
+
+  Future<void> _saveChanges() async {
+    final nameErr = UserValidator.validateName(_nameCtrl.text.trim());
+    final plateErr = UserValidator.validatePlate(_plateCtrl.text.trim());
+    setState(() {
+      _nameErr = nameErr;
+      _plateErr = plateErr;
+    });
+    if (nameErr != null || plateErr != null) return;
+    final updated = _user!.copyWith(
+      name: _nameCtrl.text.trim(),
+      vehiclePlate: _plateCtrl.text.trim(),
+    );
+    await _repo.updateUser(updated);
+    if (!mounted) return;
+    setState(() {
+      _user = updated;
+      _editing = false;
+    });
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Profile updated')));
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDeleteAccountDialog(context);
+    if (confirmed != true || !mounted) return;
+    await _repo.deleteUser(_user!.email);
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+  }
+
+  Future<void> _signOut() async {
+    await _repo.clearSession();
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+  }
+
+  void _toggleEdit() {
+    setState(() {
+      if (_editing) {
+        _nameCtrl.text = _user?.name ?? '';
+        _plateCtrl.text = _user?.vehiclePlate ?? '';
+        _nameErr = null;
+        _plateErr = null;
+      }
+      _editing = !_editing;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final hPad = width > 600 ? width * 0.2 : 24.0;
-    final color = Theme.of(context).colorScheme.primary;
+    final primary = Theme.of(context).colorScheme.primary;
 
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(_editing ? Icons.close : Icons.edit_outlined),
+            onPressed: _toggleEdit,
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
         child: Column(
           children: [
             CircleAvatar(
               radius: 52,
-              backgroundColor: color,
-              child: const Text(
-                'VP',
-                style: TextStyle(
-                  fontSize: 32,
+              backgroundColor: primary,
+              child: Text(
+                _user?.name[0].toUpperCase() ?? '?',
+                style: const TextStyle(
+                  fontSize: 36,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(height: 14),
-            const Text(
-              'Vital Pal',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
-              'vital@example.com',
+              _user?.email ?? '',
               style: TextStyle(color: Colors.grey.shade600),
             ),
-            const SizedBox(height: 32),
-            const ProfileSection(title: 'Account', items: _accountItems),
-            const SizedBox(height: 16),
-            const ProfileSection(title: 'Settings', items: _settingsItems),
-            const SizedBox(height: 32),
-            AppButton(
-              label: 'Sign Out',
-              onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                    (_) => false,
+            const SizedBox(height: 28),
+            if (_editing)
+              ProfileEditForm(
+                nameCtrl: _nameCtrl,
+                plateCtrl: _plateCtrl,
+                onSave: _saveChanges,
+                nameError: _nameErr,
+                plateError: _plateErr,
+              )
+            else
+              ProfileInfoCard(user: _user!),
+            const SizedBox(height: 28),
+            AppButton(label: 'Sign Out', outlined: true, onPressed: _signOut),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _deleteAccount,
+              child: const Text(
+                'Delete Account',
+                style: TextStyle(color: Colors.red),
               ),
-              outlined: true,
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),

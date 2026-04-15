@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 class AppTextField extends StatelessWidget {
   const AppTextField({
     required this.label,
-    this.hint,
+    required this.controller, this.hint,
     this.icon,
     this.obscure = false,
+    this.errorText,
     super.key,
   });
 
@@ -13,14 +14,18 @@ class AppTextField extends StatelessWidget {
   final String? hint;
   final IconData? icon;
   final bool obscure;
+  final TextEditingController controller;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        errorText: errorText,
         prefixIcon: icon != null ? Icon(icon) : null,
         filled: true,
         fillColor: Colors.grey.shade100,
