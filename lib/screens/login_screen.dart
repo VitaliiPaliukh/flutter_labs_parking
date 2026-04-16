@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/domain/user_validator.dart';
 import 'package:parking/widgets/app_button.dart';
 import 'package:parking/widgets/app_logo.dart';
@@ -37,19 +38,42 @@ class _LoginScreenState extends State<LoginScreen> {
       _passError = passErr;
     });
     if (emailErr != null || passErr != null) return;
-    setState(() => _loading = true);
-    final user = await _repo.login(_emailCtrl.text.trim(), _passCtrl.text);
+
+    final online = await ConnectivityService.isConnected();
     if (!mounted) return;
-    setState(() => _loading = false);
-    if (user == null) {
+    if (!online) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
+        const SnackBar(
+          content: Text('No internet connection. Trying local sign in.'),
+          backgroundColor: Colors.orange,
+        ),
       );
-      return;
     }
-    await _repo.saveSession(user.email);
-    if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/home');
+
+    setState(() => _loading = true);
+    try {
+      final user = await _repo.login(
+        _emailCtrl.text.trim(),
+        _passCtrl.text,
+      );
+      if (!mounted) return;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid email or password')),
+        );
+        return;
+      }
+      await _repo.saveSession(user.email);
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
