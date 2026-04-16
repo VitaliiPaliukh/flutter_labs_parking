@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
