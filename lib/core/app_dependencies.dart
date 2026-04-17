@@ -13,6 +13,5 @@ class AppDependencies {
   final UserRepository userRepository = LocalUserRepository();
   final ConnectivityService connectivity = const ConnectivityService();
   final MqttService mqttService = MqttService(brokerIp: '192.168.0.101');
-  final ParkingLotRepository parkingLotRepository =
-  ApiParkingLotRepository();
+  final ParkingLotRepository parkingLotRepository = ApiParkingLotRepository();
 }
