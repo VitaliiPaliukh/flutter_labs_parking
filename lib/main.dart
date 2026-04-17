@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/screens/home_screen.dart';
 import 'package:parking/screens/login_screen.dart';
+import 'package:parking/screens/parking_list_screen.dart';
 import 'package:parking/screens/profile_screen.dart';
 import 'package:parking/screens/register_screen.dart';
 
@@ -26,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
         '/profile': (_) => const ProfileScreen(),
+        '/parking-lots': (_) => const ParkingListScreen(),
       },
     );
   }
@@ -49,24 +52,19 @@ class _AuthGateState extends State<_AuthGate> {
     final repo = AppDependencies().userRepository;
     final session = await repo.getSession();
     if (!mounted) return;
-
     if (session == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-
     final online = await ConnectivityService.isConnected();
     if (!mounted) return;
-
     Navigator.pushReplacementNamed(context, '/home');
-
     if (!online) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('No internet connection. Limited mode.'),
-            // duration: Duration(seconds: 4),
             backgroundColor: Colors.orange,
           ),
         );
