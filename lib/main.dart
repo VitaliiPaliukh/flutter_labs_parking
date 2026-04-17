@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/screens/home_screen.dart';
 import 'package:parking/screens/login_screen.dart';
 import 'package:parking/screens/profile_screen.dart';
@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Checks persisted session and routes to home or login.
 class _AuthGate extends StatefulWidget {
   const _AuthGate();
 
@@ -47,12 +46,32 @@ class _AuthGateState extends State<_AuthGate> {
   }
 
   Future<void> _checkSession() async {
-    final session = await AppDependencies().userRepository.getSession();
+    final repo = AppDependencies().userRepository;
+    final session = await repo.getSession();
     if (!mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
-      session != null ? '/home' : '/login',
-    );
+
+    if (session == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    final online = await ConnectivityService.isConnected();
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, '/home');
+
+    if (!online) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Limited mode.'),
+            // duration: Duration(seconds: 4),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      });
+    }
   }
 
   @override
