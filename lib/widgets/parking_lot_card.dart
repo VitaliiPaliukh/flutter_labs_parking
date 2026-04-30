@@ -93,7 +93,10 @@ class ParkingLotCard extends StatelessWidget {
                         constraints: const BoxConstraints(),
                         visualDensity: VisualDensity.compact,
                         onPressed: onEdit,
-                        icon: Icon(Icons.edit_outlined, color: primary),
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          color: primary,
+                        ),
                       ),
                     if (onDelete != null)
                       IconButton(
@@ -103,7 +106,10 @@ class ParkingLotCard extends StatelessWidget {
                         constraints: const BoxConstraints(),
                         visualDensity: VisualDensity.compact,
                         onPressed: onDelete,
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                        ),
                       ),
                   ],
                 ),

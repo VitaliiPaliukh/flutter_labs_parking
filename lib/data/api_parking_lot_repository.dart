@@ -31,7 +31,9 @@ class ApiParkingLotRepository implements ParkingLotRepository {
   @override
   Future<void> addParkingLot(ParkingLot lot) async {
     final lots = await _loadFromCache();
-    final id = lot.id.isEmpty ? DateTime.now().millisecondsSinceEpoch.toString() : lot.id;
+    final id = lot.id.isEmpty
+        ? DateTime.now().millisecondsSinceEpoch.toString()
+        : lot.id;
     lots.add(
       ParkingLot(
         id: id,
