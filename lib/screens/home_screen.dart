@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/core/mqtt_service.dart';
@@ -27,11 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _mqttConnected = false;
   bool _alarmActive = false;
   int _free = 5;
-  int _occupied = 0;
-  Timer? _mqttRetryTimer;
+  int _occupied = 15;
 
   late final StreamSubscription<bool> _connectivitySub;
-  late final StreamSubscription<bool> _mqttConnectionSub;
   late final StreamSubscription<ParkingSlots> _slotsSub;
   late final StreamSubscription<bool> _alarmSub;
 
@@ -63,20 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initMqtt() async {
-    _mqttConnectionSub = _mqtt.onConnectionChanged.listen((connected) {
-      if (!mounted) return;
-      setState(() => _mqttConnected = connected);
-      if (connected) {
-        _mqttRetryTimer?.cancel();
-      } else {
-        _scheduleMqttRetry();
-      }
-    });
-
     final connected = await _mqtt.connect();
     if (!mounted) return;
     setState(() => _mqttConnected = connected);
-    if (!connected) _scheduleMqttRetry();
 
     _slotsSub = _mqtt.onSlotsChanged.listen((slots) {
       if (!mounted) return;
@@ -92,29 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _scheduleMqttRetry() {
-    _mqttRetryTimer ??= Timer.periodic(const Duration(seconds: 5), (_) async {
-      if (!mounted || _mqttConnected) {
-        _mqttRetryTimer?.cancel();
-        _mqttRetryTimer = null;
-        return;
-      }
-
-      final connected = await _mqtt.connect();
-      if (!mounted) return;
-      setState(() => _mqttConnected = connected);
-      if (connected) {
-        _mqttRetryTimer?.cancel();
-        _mqttRetryTimer = null;
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _mqttRetryTimer?.cancel();
     _connectivitySub.cancel();
-    _mqttConnectionSub.cancel();
     _slotsSub.cancel();
     _alarmSub.cancel();
     _mqtt.disconnect();
@@ -130,30 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _user = user);
   }
 
-  Future<void> _confirmSignOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Sign out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sign out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-    await AppDependencies().userRepository.clearSession();
-    if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
-  }
-
   List<ParkingSpot> _liveZone(int from, int to) {
     final spots = ParkingData.all.sublist(from, to);
     final int remaining = _free - from;
@@ -166,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final hPad = width > 600 ? width * 0.1 : 16.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -210,6 +152,23 @@ class _HomeScreenState extends State<HomeScreen> {
             if (_alarmActive) const AlarmBanner(),
             MqttStatusRow(connected: _mqttConnected),
             const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/parking-lots'),
+                icon: const Icon(Icons.format_list_bulleted),
+                label: const Text('View All Parking Lots'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF74839C),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -249,15 +208,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ParkingZoneCard(zone: 'A', spots: _liveZone(0, 10)),
             const SizedBox(height: 12),
             ParkingZoneCard(zone: 'B', spots: _liveZone(10, 20)),
-            const SizedBox(height: 24),
-            TextButton.icon(
-              onPressed: _confirmSignOut,
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text(
-                'Sign out',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
           ],
         ),
       ),

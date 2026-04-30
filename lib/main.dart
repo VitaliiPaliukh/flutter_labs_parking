@@ -1,12 +1,77 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
+import 'package:parking/firebase_options.dart';
 import 'package:parking/screens/home_screen.dart';
 import 'package:parking/screens/login_screen.dart';
+import 'package:parking/screens/parking_list_screen.dart';
 import 'package:parking/screens/profile_screen.dart';
 import 'package:parking/screens/register_screen.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const _BootstrapApp());
+}
+
+class _BootstrapApp extends StatefulWidget {
+  const _BootstrapApp();
+
+  @override
+  State<_BootstrapApp> createState() => _BootstrapAppState();
+}
+
+class _BootstrapAppState extends State<_BootstrapApp> {
+  late final Future<void> _firebaseInitFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _firebaseInitFuture = Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _firebaseInitFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'Firebase initialization failed.\n'
+                    'Run `flutterfire configure` and '
+                    'add `firebase_options.dart`.\n\n'
+                    'Error: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return const MyApp();
+      },
+    );
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +82,9 @@ class MyApp extends StatelessWidget {
       title: 'SmartPark',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D47A1)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0D47A1),
+        ),
         useMaterial3: true,
       ),
       home: const _AuthGate(),
@@ -26,6 +93,7 @@ class MyApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
         '/profile': (_) => const ProfileScreen(),
+        '/parking-lots': (_) => const ParkingListScreen(),
       },
     );
   }
@@ -49,24 +117,21 @@ class _AuthGateState extends State<_AuthGate> {
     final repo = AppDependencies().userRepository;
     final session = await repo.getSession();
     if (!mounted) return;
-
     if (session == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-
     final online = await ConnectivityService.isConnected();
     if (!mounted) return;
-
     Navigator.pushReplacementNamed(context, '/home');
-
     if (!online) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No internet connection. Limited mode.'),
-            // duration: Duration(seconds: 4),
+            content: Text(
+              'No internet connection. Limited mode.',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
