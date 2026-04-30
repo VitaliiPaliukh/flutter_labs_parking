@@ -26,9 +26,163 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
     _future = AppDependencies().parkingLotRepository.getParkingLots();
   }
 
+  void _reload() => setState(_load);
+
   Future<void> _checkConnectivity() async {
     final online = await ConnectivityService.isConnected();
     if (mounted) setState(() => _isOnline = online);
+  }
+
+  Future<ParkingLot?> _showLotDialog({ParkingLot? initial}) async {
+    final formKey = GlobalKey<FormState>();
+    final nameController =
+        TextEditingController(text: initial?.name ?? '');
+    final addressController =
+        TextEditingController(text: initial?.address ?? '');
+    final totalController = TextEditingController(
+      text: initial?.totalSlots.toString() ?? '',
+    );
+
+    return showDialog<ParkingLot>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(initial == null ? 'Add parking lot' : 'Edit parking lot'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Name'),
+                    validator: (value) => (value == null ||
+                            value.trim().isEmpty)
+                        ? 'Enter name'
+                        : null,
+                  ),
+                  TextFormField(
+                    controller: addressController,
+                    decoration: const InputDecoration(labelText: 'Address'),
+                    validator: (value) => (value == null ||
+                            value.trim().isEmpty)
+                        ? 'Enter address'
+                        : null,
+                  ),
+                  TextFormField(
+                    controller: totalController,
+                    decoration: const InputDecoration(labelText: 'Total slots'),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      final parsed = int.tryParse((value ?? '').trim());
+                      if (parsed == null || parsed <= 0) {
+                        return 'Enter positive number';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (!(formKey.currentState?.validate() ?? false)) {
+                  return;
+                }
+                Navigator.pop(
+                  dialogContext,
+                  ParkingLot(
+                    id: initial?.id ?? '',
+                    name: nameController.text.trim(),
+                    address: addressController.text.trim(),
+                    totalSlots: int.parse(totalController.text.trim()),
+                  ),
+                );
+              },
+              child: Text(initial == null ? 'Add' : 'Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _addLot() async {
+    final lot = await _showLotDialog();
+    if (lot == null) return;
+    try {
+      await AppDependencies().parkingLotRepository.addParkingLot(lot);
+      _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Parking lot added')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add: $e')),
+      );
+    }
+  }
+
+  Future<void> _editLot(ParkingLot lot) async {
+    final updated = await _showLotDialog(initial: lot);
+    if (updated == null) return;
+    try {
+      await AppDependencies().parkingLotRepository.updateParkingLot(updated);
+      _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Parking lot updated')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update: $e')),
+      );
+    }
+  }
+
+  Future<void> _deleteLot(ParkingLot lot) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete parking lot'),
+        content: Text('Delete "${lot.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await AppDependencies().parkingLotRepository.deleteParkingLot(lot.id);
+      _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Parking lot deleted')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete: $e')),
+      );
+    }
   }
 
   @override
@@ -47,9 +201,13 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => setState(_load),
+            onPressed: _reload,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addLot,
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -57,8 +215,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
             Container(
               width: double.infinity,
               color: Colors.orange.shade50,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 'Offline — showing cached data',
                 style: TextStyle(color: Colors.orange.shade700, fontSize: 13),
@@ -76,7 +233,20 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                 }
                 final lots = snapshot.data ?? [];
                 if (lots.isEmpty) {
-                  return const Center(child: Text('No parking lots found'));
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('No parking lots found'),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: _addLot,
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add first parking lot'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(
@@ -84,7 +254,11 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                     vertical: 16,
                   ),
                   itemCount: lots.length,
-                  itemBuilder: (_, i) => ParkingLotCard(lot: lots[i]),
+                  itemBuilder: (_, i) => ParkingLotCard(
+                    lot: lots[i],
+                    onEdit: () => _editLot(lots[i]),
+                    onDelete: () => _deleteLot(lots[i]),
+                  ),
                 );
               },
             ),

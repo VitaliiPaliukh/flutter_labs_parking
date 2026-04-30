@@ -1,6 +1,6 @@
 import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/core/mqtt_service.dart';
-import 'package:parking/data/api_parking_lot_repository.dart';
+import 'package:parking/data/firestore_parking_lot_repository.dart';
 import 'package:parking/data/local_user_repository.dart';
 import 'package:parking/data/parking_lot_repository.dart';
 import 'package:parking/data/user_repository.dart';
@@ -12,6 +12,7 @@ class AppDependencies {
 
   final UserRepository userRepository = LocalUserRepository();
   final ConnectivityService connectivity = const ConnectivityService();
-  final MqttService mqttService = MqttService(brokerIp: '192.168.0.101');
-  final ParkingLotRepository parkingLotRepository = ApiParkingLotRepository();
+  final MqttService mqttService = MqttService(brokerIp: '172.20.10.3');
+  final ParkingLotRepository parkingLotRepository =
+      FirestoreParkingLotRepository();
 }

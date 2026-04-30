@@ -6,32 +6,48 @@ class ParkingLot {
     required this.totalSlots,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String address;
   final int totalSlots;
 
-  factory ParkingLot.fromJson(Map<String, dynamic> json) {
-    final addr = json['address'] as Map<String, dynamic>;
-    return ParkingLot(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      address: '${addr['street']}, ${addr['city']}',
-      totalSlots: (json['id'] as int) * 3,
-    );
-  }
+  factory ParkingLot.fromJson(Map<String, dynamic> json) => ParkingLot(
+    id: json['id'].toString(),
+    name: (json['name'] as String?) ?? '',
+    address: json['address'] is Map<String, dynamic>
+        ? ((json['address'] as Map<String, dynamic>)['street'] as String? ?? '')
+        : (json['address'] as String? ?? ''),
+    totalSlots: (json['totalSlots'] as num?)?.toInt() ?? 0,
+  );
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
+  factory ParkingLot.fromFirestore(
+    String id,
+    Map<String, dynamic> json,
+  ) =>
+      ParkingLot(
+        id: id,
+        name: json['name'] as String? ?? 'Unknown',
+        address: json['address'] as String? ?? 'No address',
+        totalSlots: ((json['totalSlots'] as num?) ?? 0).toInt(),
+      );
+
+  factory ParkingLot.fromCache(Map<String, dynamic> json) => ParkingLot(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    address: json['address'] as String,
+    totalSlots: (json['totalSlots'] as num).toInt(),
+  );
+
+  Map<String, dynamic> toFirestore() => {
     'name': name,
     'address': address,
     'totalSlots': totalSlots,
   };
 
-  factory ParkingLot.fromCache(Map<String, dynamic> json) => ParkingLot(
-    id: json['id'] as int,
-    name: json['name'] as String,
-    address: json['address'] as String,
-    totalSlots: json['totalSlots'] as int,
-  );
+  Map<String, dynamic> toCache() => {
+    'id': id,
+    'name': name,
+    'address': address,
+    'totalSlots': totalSlots,
+  };
 }

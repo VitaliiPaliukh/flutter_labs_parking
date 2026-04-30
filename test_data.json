@@ -1,0 +1,20 @@
+{
+  "parking_lots": {
+    "lot1": {
+      "name": "Downtown Parking",
+      "address": "Main St 123",
+      "totalSlots": 100
+    },
+    "lot2": {
+      "name": "Airport Parking",
+      "address": "Airport Rd 456",
+      "totalSlots": 500
+    },
+    "lot3": {
+      "name": "Mall Parking",
+      "address": "Shopping Center 789",
+      "totalSlots": 250
+    }
+  }
+}
+

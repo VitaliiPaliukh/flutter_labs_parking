@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:parking/models/parking_lot.dart';
 
 class ParkingLotCard extends StatelessWidget {
-  const ParkingLotCard({required this.lot, super.key});
+  const ParkingLotCard({
+    required this.lot,
+    this.onEdit,
+    this.onDelete,
+    super.key,
+  });
 
   final ParkingLot lot;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +80,34 @@ class ParkingLotCard extends StatelessWidget {
                 'slots',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
               ),
+              if (onEdit != null || onDelete != null) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onEdit != null)
+                      IconButton(
+                        tooltip: 'Edit',
+                        iconSize: 18,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: onEdit,
+                        icon: Icon(Icons.edit_outlined, color: primary),
+                      ),
+                    if (onDelete != null)
+                      IconButton(
+                        tooltip: 'Delete',
+                        iconSize: 18,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: onDelete,
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ),
         ],

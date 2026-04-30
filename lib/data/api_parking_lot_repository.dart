@@ -28,6 +28,40 @@ class ApiParkingLotRepository implements ParkingLotRepository {
     }
   }
 
+  @override
+  Future<void> addParkingLot(ParkingLot lot) async {
+    final lots = await _loadFromCache();
+    final id = lot.id.isEmpty ? DateTime.now().millisecondsSinceEpoch.toString() : lot.id;
+    lots.add(
+      ParkingLot(
+        id: id,
+        name: lot.name,
+        address: lot.address,
+        totalSlots: lot.totalSlots,
+      ),
+    );
+    await _saveToCache(lots);
+  }
+
+  @override
+  Future<void> updateParkingLot(ParkingLot lot) async {
+    final lots = await _loadFromCache();
+    final index = lots.indexWhere((item) => item.id == lot.id);
+    if (index == -1) {
+      lots.add(lot);
+    } else {
+      lots[index] = lot;
+    }
+    await _saveToCache(lots);
+  }
+
+  @override
+  Future<void> deleteParkingLot(String id) async {
+    final lots = await _loadFromCache();
+    lots.removeWhere((lot) => lot.id == id);
+    await _saveToCache(lots);
+  }
+
   Future<List<ParkingLot>> _loadFromCache() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_cacheKey);
@@ -42,7 +76,7 @@ class ApiParkingLotRepository implements ParkingLotRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       _cacheKey,
-      jsonEncode(lots.map((l) => l.toJson()).toList()),
+      jsonEncode(lots.map((l) => l.toCache()).toList()),
     );
   }
 }

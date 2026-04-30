@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _mqttConnected = false;
   bool _alarmActive = false;
   int _free = 5;
-  int _occupied = 0;
+  int _occupied = 15;
 
   late final StreamSubscription<bool> _connectivitySub;
   late final StreamSubscription<ParkingSlots> _slotsSub;
