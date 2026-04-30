@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/cubit/parking_lots_cubit.dart';
+
+import 'package:parking/core/app_dependencies.dart';
+import 'package:parking/core/connectivity_service.dart';
 import 'package:parking/firebase_options.dart';
 import 'package:parking/screens/home_screen.dart';
 import 'package:parking/screens/login_screen.dart';
