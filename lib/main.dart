@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
+import 'package:parking/cubit/parking_lots_cubit.dart';
 import 'package:parking/firebase_options.dart';
 import 'package:parking/screens/home_screen.dart';
 import 'package:parking/screens/login_screen.dart';
@@ -78,23 +80,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SmartPark',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0D47A1),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              ParkingLotsCubit(AppDependencies()
+                  .parkingLotRepository),
         ),
-        useMaterial3: true,
+      ],
+      child: MaterialApp(
+        title: 'SmartPark',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF0D47A1),
+          ),
+          useMaterial3: true,
+        ),
+        home: const _AuthGate(),
+        routes: {
+          '/login': (_) => const LoginScreen(),
+          '/register': (_) => const RegisterScreen(),
+          '/home': (_) => const HomeScreen(),
+          '/profile': (_) => const ProfileScreen(),
+          '/parking-lots': (_) => const ParkingListScreen(),
+        },
       ),
-      home: const _AuthGate(),
-      routes: {
-        '/login': (_) => const LoginScreen(),
-        '/register': (_) => const RegisterScreen(),
-        '/home': (_) => const HomeScreen(),
-        '/profile': (_) => const ProfileScreen(),
-        '/parking-lots': (_) => const ParkingListScreen(),
-      },
     );
   }
 }
