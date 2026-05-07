@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+
+import 'package:parking/core/mqtt_browser_client_stub.dart'
+    if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
 
 class ParkingSlots {
   const ParkingSlots({required this.free, required this.occupied});
