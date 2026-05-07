@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flashlight_plugin/flashlight_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:parking/core/app_dependencies.dart';
 import 'package:parking/core/connectivity_service.dart';
@@ -44,18 +45,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initConnectivity() async {
     _isOnline = await ConnectivityService.isConnected();
     if (mounted) setState(() {});
-    _connectivitySub =
-        ConnectivityService.onConnectivityChanged.listen((online) {
-          if (!mounted) return;
-          setState(() => _isOnline = online);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(online ? 'Back online' : 'Connection lost'),
-              backgroundColor: online ? Colors.green : Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        });
+    _connectivitySub = ConnectivityService.onConnectivityChanged.listen((
+      online,
+    ) {
+      if (!mounted) return;
+      setState(() => _isOnline = online);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(online ? 'Back online' : 'Connection lost'),
+          backgroundColor: online ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 
   Future<void> _initMqtt() async {
@@ -95,6 +97,34 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _user = user);
   }
 
+  Future<void> _toggleFlashlight() async {
+    try {
+      final isOn = await FlashlightPlugin.toggle();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isOn ? 'Flashlight is on' : 'Flashlight is off'),
+          backgroundColor: Colors.blueGrey,
+        ),
+      );
+    } on UnsupportedError catch (error) {
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Unsupported feature'),
+          content: Text(error.message ?? error.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   List<ParkingSpot> _liveZone(int from, int to) {
     final spots = ParkingData.all.sublist(from, to);
     final int remaining = _free - from;
@@ -132,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
               await Navigator.pushNamed(context, '/profile');
               _loadUser();
             },
+            onLongPress: _toggleFlashlight,
             child: CircleAvatar(
               backgroundColor: const Color(0xFF0D47A1),
               child: Text(
